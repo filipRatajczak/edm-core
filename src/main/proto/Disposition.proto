@@ -1,0 +1,41 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+package gft.edm.grpc.disposition;
+
+option java_outer_classname = "DispositionProto";
+option java_multiple_files = true;
+
+service DispositionService {
+  rpc GetDispositionsByEmployeeCode (GetDispositionsByEmployeeCodeRequest) returns (Dispositions);
+  rpc GetAllDisposition (google.protobuf.Empty) returns (Dispositions);
+  rpc UpdateDisposition (UpdateDispositionRequest) returns (Disposition);
+  rpc CreateDisposition (CreateDispositionRequest) returns (Disposition);
+  rpc DeleteDisposition (DeleteDispositionsByIdRequest) returns (google.protobuf.Empty);
+}
+
+message GetDispositionsByEmployeeCodeRequest {
+  string employeeCode = 1;
+}
+
+message DeleteDispositionsByIdRequest {
+  string id = 1;
+}
+
+message UpdateDispositionRequest {
+  Disposition disposition = 1;
+}
+
+message CreateDispositionRequest {
+  Disposition disposition = 1;
+}
+
+message Disposition {
+  string day = 1;
+  string start = 2;
+  string stop = 3;
+  string employeeCode = 4;
+}
+
+message Dispositions {
+  repeated Disposition disposition = 1;
+}

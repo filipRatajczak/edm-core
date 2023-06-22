@@ -1,0 +1,8 @@
+edm:
+  schedule:
+    min-employees: 2
+    max-employees: 4
+  fairness: 90
+  api: http://localhost:8080
+server:
+  port: 8082
