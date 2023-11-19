@@ -2,6 +2,8 @@ edm:
   schedule:
     min-employees: 2
     max-employees: 4
+    ratio-weight: 5
+    min-working-hours: 2
   fairness: 90
   api: http://localhost:8080
 server:
