@@ -4,17 +4,39 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Document(collection = "edm-core")
 public class Schedule {
 
-    private LocalDate localDate;
-    private List<DispositionDto> dispositionDtos;
+    @Id
+    private UUID id = UUID.randomUUID();
+    private LocalDate day;
+    private Set<DispositionDto> dispositionDtos;
+    private String errorMessage;
 
+    public Schedule(LocalDate day, Set<DispositionDto> dispositionDtos, String errorMessage) {
+        this.day = day;
+        this.dispositionDtos = dispositionDtos;
+        this.errorMessage = errorMessage;
+    }
+
+    @Override
+    public String toString() {
+        return "Schedule{" +
+                "id=" + id +
+                ", localDate=" + day +
+                ", dispositionDtos=" + dispositionDtos +
+                ", errorMessages=" + errorMessage +
+                '}';
+    }
 }
