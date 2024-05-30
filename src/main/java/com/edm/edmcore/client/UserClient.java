@@ -34,6 +34,7 @@ public class UserClient {
                 .retrieve()
                 .bodyToMono(AuthenticationToken.class);
 
+
         return disposition.block();
     }
 

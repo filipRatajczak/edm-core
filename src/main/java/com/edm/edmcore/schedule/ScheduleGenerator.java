@@ -3,17 +3,16 @@ package com.edm.edmcore.schedule;
 import com.edm.edmcore.client.DispositionClient;
 import com.edm.edmcore.model.DispositionDto;
 import com.edm.edmcore.model.Schedule;
+import com.edm.edmcore.model.SchedulePeriod;
+import com.edm.edmcore.model.ScheduleRequest;
 import com.edm.edmcore.repository.ScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
-
-import static java.time.temporal.ChronoUnit.DAYS;
+import java.util.Set;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -25,40 +24,39 @@ public class ScheduleGenerator {
     private final ScheduleRepository scheduleRepository;
 
 
-    public List<Schedule> generateSchedule(LocalDate from, LocalDate to) {
+    public Schedule generateSchedule(ScheduleRequest scheduleRequest) {
 
-        List<Schedule> schedules = new ArrayList<>();
+        Set<DispositionDto> scheduledDispositions = new LinkedHashSet<>();
+        StringBuilder errorMessage = new StringBuilder();
 
-        List<LocalDate> dateObjectsBetween = createDateObjectsBetween(from, to);
+        for (SchedulePeriod period : scheduleRequest.getSchedulePeriods()) {
 
-        for (LocalDate currentDate : dateObjectsBetween) {
-            if (scheduleRepository.findByDay(currentDate).isEmpty()) {
-                scheduleRepository.deleteAllByDay(currentDate);
-            }
-            LinkedHashSet<DispositionDto> currentDateDispositions = new LinkedHashSet<>(dispositionClient.getAllDisposition(currentDate, currentDate));
-            Schedule scheduledDisposition = scheduleUtil.generateSchedule(currentDateDispositions, currentDate);
-            schedules.add(scheduledDisposition);
-            scheduleRepository.save(scheduledDisposition);
+
+
+            Set<DispositionDto> dispositions = dispositionClient.getAllDispositionByOrganizationCode(scheduleRequest.getOrganizationCode(), scheduleRequest.getDate());
+            System.out.println(dispositions);
+            Schedule partialSchedule = scheduleUtil.generateSchedule(period, dispositions, scheduledDispositions);
+
+            System.out.println(partialSchedule.getDispositionDtos());
+
+            scheduledDispositions.addAll(partialSchedule.getDispositionDtos());
+            errorMessage.append(partialSchedule.getErrorMessage());
+
         }
-        return schedules;
+
+        Schedule schedule = Schedule.builder()
+                .id(UUID.randomUUID())
+                .day(scheduleRequest.getDate())
+                .errorMessage(errorMessage.toString())
+                .dispositionDtos(scheduledDispositions)
+                .build();
+
+        scheduleRepository.save(schedule);
+
+        System.out.println(schedule);
+
+        return schedule;
     }
 
-    private static List<LocalDate> createDateObjectsBetween(LocalDate from, LocalDate to) {
-        List<LocalDate> dateObjects = new ArrayList<>();
-
-        dateObjects.add(from);
-
-        long interval = DAYS.between(from, to);
-
-        for (int i = 1; i < interval; i++) {
-            LocalDate date = from.plusDays(i);
-            dateObjects.add(date);
-        }
-        dateObjects.add(to);
-
-        dateObjects.sort(LocalDate::compareTo);
-
-        return dateObjects;
-    }
 
 }

@@ -17,10 +17,9 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
-import static com.edm.edmcore.util.Constant.CONST_AUTHORIZATION;
-import static com.edm.edmcore.util.Constant.CONST_BEARER;
-import static com.edm.edmcore.util.Constant.CONST_DISPOSITION_PATH;
+import static com.edm.edmcore.util.Constant.*;
 
 @Component
 @Slf4j
@@ -63,6 +62,28 @@ public class DispositionClient {
         return disposition.blockLast();
     }
 
+    public Set<DispositionDto> getAllDispositionByOrganizationCode(String organizationCode, LocalDate from, LocalDate to) {
+
+        String uri = UriComponentsBuilder.newInstance().path(CONST_DISPOSITION_PATH)
+                .query("organizationCode={organizationCode}")
+                .query("from={from}")
+                .query("to={to}")
+                .buildAndExpand(organizationCode, from.toString(), to.toString()).toString();
+
+        Mono<Set<DispositionDto>> disposition = webClient.get()
+                .uri(uri)
+                .header(CONST_AUTHORIZATION, CONST_BEARER + AuthenticationTokenHolder.jwtToken)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<>() {
+                });
+
+        return disposition.block();
+    }
+
+    public Set<DispositionDto> getAllDispositionByOrganizationCode(String organizationCode, LocalDate date) {
+        return getAllDispositionByOrganizationCode(organizationCode, date, date);
+    }
+
     public DispositionRatioDto getDispositionRatio(String employeeCode) {
 
         String uri = UriComponentsBuilder.newInstance().path("/api/v1/dispositionsRatio/" + employeeCode).build().toUriString();
@@ -74,7 +95,6 @@ public class DispositionClient {
                 .retrieve()
                 .bodyToMono(DispositionRatioDto.class)
                 .block();
-
     }
 
 }
