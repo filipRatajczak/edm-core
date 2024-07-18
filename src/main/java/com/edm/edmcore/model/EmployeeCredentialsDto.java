@@ -11,7 +11,7 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @ToString
-public class EmployeeCredentials {
+public class EmployeeCredentialsDto {
 
     private String email;
     private String password;

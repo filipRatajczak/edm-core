@@ -2,9 +2,6 @@ package com.edm.edmcore.util;
 
 public class Constant {
 
-    public static final int CONST_EIGHT = 8;
-    public static final int CONST_ZERO = 0;
-    public static final int CONST_TWENTY_TWO = 22;
     public static final int CONST_FIFTEEN = 15;
 
     public static final int CONST_SIXTEEN = 60;

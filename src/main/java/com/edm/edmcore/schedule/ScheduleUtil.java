@@ -42,10 +42,7 @@ public class ScheduleUtil {
 
     public Schedule generateSchedule(SchedulePeriod period, Set<DispositionDto> allDispositions, Set<DispositionDto> scheduledDispositions) {
 
-
         List<LocalTime> notEnoughPeriods = new LinkedList<>();
-
-        System.out.println(period);
 
         LocalTime currentTime = LocalTime.from(period.getFrom());
 
@@ -113,35 +110,36 @@ public class ScheduleUtil {
 
     private Set<DispositionRatioDto> calculateFitnessAndSortByRatio(Set<DispositionDto> dispositions,
                                                                     LocalTime currentTime) {
+
         return dispositions.stream()
                 .map(disposition -> {
-                    BigDecimal hourlySurplus = DateUtil.calculateHourlySurplus(disposition, currentTime);
-                    DispositionRatioDto dispositionRatioDto =
-                            dispositionClient.getDispositionRatio(disposition.getEmployeeCode());
-                    dispositionRatioDto.setRatio(hourlySurplus
-                            .subtract(dispositionRatioDto.getRatio().multiply(BigDecimal.valueOf(ratioWeight))));
+                    BigDecimal hourlySurplus = DateUtil.calculateHourlySurplus(currentTime, parseStringToLocalTime(disposition.getStop()));
+                    DispositionRatioDto dispositionRatioDto = dispositionClient.getDispositionRatio(disposition.getEmployeeCode());
+                    dispositionRatioDto.setRatio(hourlySurplus.subtract(dispositionRatioDto.getRatio().multiply(BigDecimal.valueOf(ratioWeight))));
                     return dispositionRatioDto;
-                }).sorted(Comparator.comparing(DispositionRatioDto::getRatio))
+                })
+                .sorted(Comparator.comparing(DispositionRatioDto::getRatio))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private Set<DispositionDto> getDispositionsWithHighestFitness(Set<DispositionDto> dispositions,
-                                                                  Set<DispositionRatioDto> dispositionRatioDtos, int maxEmployeeRule) {
+                                                                  Set<DispositionRatioDto> dispositionRatioDtos,
+                                                                  int maxEmployeeRule) {
         return dispositionRatioDtos.stream().map(e -> {
                     for (DispositionDto dispositionDto : dispositions) {
                         if (e.getEmployeeCode().equals(dispositionDto.getEmployeeCode())) {
                             return dispositionDto;
                         }
                     }
-                    throw new RuntimeException(
-                            "Disposition with employeeCode:[ " + e.getEmployeeCode() + "] not found!");
+                    throw new RuntimeException("Disposition with employeeCode:[ " + e.getEmployeeCode() + "] not found!");
                 })
                 .limit(maxEmployeeRule)
                 .collect(Collectors.toSet());
     }
 
     private Set<DispositionDto> getDispositionsWithLowestFitness(Set<DispositionDto> dispositionDtos,
-                                                                 Set<DispositionRatioDto> dispositionRatioDtos, int maxEmployeeRule) {
+                                                                 Set<DispositionRatioDto> dispositionRatioDtos,
+                                                                 int maxEmployeeRule) {
         return dispositionRatioDtos.stream().map(e -> {
                     for (DispositionDto dispositionDto : dispositionDtos) {
                         if (e.getEmployeeCode().equals(dispositionDto.getEmployeeCode())) {
@@ -155,24 +153,24 @@ public class ScheduleUtil {
 
     private void cutAndRemoveBelowMinimumWorkingHours(Set<DispositionDto> scheduledDispositions,
                                                       Set<DispositionDto> conflicted,
-                                                      LocalTime time, int maxEmployeeRule) {
+                                                      LocalTime time,
+                                                      int maxEmployeeRule) {
 
         Set<DispositionRatioDto> dispositionRatioDtos = calculateFitnessAndSortByRatio(conflicted, time);
-        Set<DispositionDto> dispositionsWithHighestFitness =
-                getDispositionsWithHighestFitness(conflicted, dispositionRatioDtos, maxEmployeeRule);
+        Set<DispositionDto> dispositionsWithHighestFitness = getDispositionsWithHighestFitness(conflicted, dispositionRatioDtos, maxEmployeeRule);
         Set<DispositionDto> conflictedButInSchedule = findConflictedInSchedule(scheduledDispositions, conflicted);
-        Set<DispositionDto> lostInFitnessButInSchedule =
-                findLostInFitnessButInSchedule(dispositionsWithHighestFitness, conflictedButInSchedule);
+        Set<DispositionDto> lostInFitnessButInSchedule = findLostInFitnessButInSchedule(dispositionsWithHighestFitness, conflictedButInSchedule);
 
         Set<DispositionDto> dispositionToRemove = lostInFitnessButInSchedule.stream()
                 .filter(disposition -> checkIfWorkingTimeIsLowerThanMinimumWorkingHours(disposition, time))
                 .collect(Collectors.toSet());
 
         removeDispositions(scheduledDispositions, dispositionToRemove);
-
     }
 
-    private Set<DispositionDto> findLostInFitnessButInSchedule(Set<DispositionDto> dispositionsWithHighestFitness, Set<DispositionDto> conflictedButInSchedule) {
+    private Set<DispositionDto> findLostInFitnessButInSchedule(Set<DispositionDto> dispositionsWithHighestFitness,
+                                                               Set<DispositionDto> conflictedButInSchedule) {
+
         Set<DispositionDto> lostDispositionInFitnessButInSchedule = new LinkedHashSet<>();
 
         conflictedButInSchedule.forEach(e -> {
@@ -192,6 +190,7 @@ public class ScheduleUtil {
 
     private Set<DispositionDto> findConflictedInSchedule(Set<DispositionDto> scheduledDisposotions,
                                                          Set<DispositionDto> conflicted) {
+
         Set<DispositionDto> conflictedButInSchedule = new LinkedHashSet<>();
 
         scheduledDisposotions.forEach(e -> {
@@ -224,8 +223,7 @@ public class ScheduleUtil {
     private void moveStartHoursOnFitnessLoss(Set<DispositionDto> conflicted, LocalTime time, int maxEmployeeRule) {
 
         Set<DispositionRatioDto> dispositionRatioDtos = calculateFitnessAndSortByRatio(conflicted, time);
-        Set<DispositionDto> dispositionsWithLowestFitness =
-                getDispositionsWithLowestFitness(conflicted, dispositionRatioDtos, maxEmployeeRule);
+        Set<DispositionDto> dispositionsWithLowestFitness = getDispositionsWithLowestFitness(conflicted, dispositionRatioDtos, maxEmployeeRule);
 
         dispositionsWithLowestFitness.forEach(disposition -> {
             Duration duration = Duration.between(time, parseStringToLocalTime(disposition.getStop()));
@@ -272,7 +270,6 @@ public class ScheduleUtil {
 
         return errorMsg.toString();
     }
-
 }
 
 

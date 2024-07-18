@@ -28,8 +28,6 @@ public class Schedule {
         this.errorMessage = errorMessage;
     }
 
-
-
     @Override
     public String toString() {
         return "Schedule{" +

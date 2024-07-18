@@ -12,9 +12,5 @@ import java.util.UUID;
 public interface ScheduleRepository extends MongoRepository<Schedule, UUID> {
 
     Schedule findFirstByDay(LocalDate day);
-    List<Schedule> findByDay(LocalDate day);
-
-
-    void deleteAllByDay(LocalDate day);
 
 }

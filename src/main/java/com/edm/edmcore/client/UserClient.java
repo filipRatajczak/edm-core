@@ -1,8 +1,7 @@
 package com.edm.edmcore.client;
 
-
-import com.edm.edmcore.model.AuthenticationToken;
 import com.edm.edmcore.model.ApplicationCredentials;
+import com.edm.edmcore.model.AuthenticationToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -33,7 +32,6 @@ public class UserClient {
                 .body(userCredentialsMono, ApplicationCredentials.class)
                 .retrieve()
                 .bodyToMono(AuthenticationToken.class);
-
 
         return disposition.block();
     }

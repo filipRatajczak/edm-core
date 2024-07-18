@@ -3,6 +3,7 @@ package com.edm.edmcore.util;
 import com.edm.edmcore.model.DispositionDto;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 
@@ -15,12 +16,9 @@ public class DateUtil {
         return LocalTime.of(timeO1Hours, timeO1Minutes);
     }
 
-    public static BigDecimal calculateHourlySurplus(DispositionDto dispositionDto, LocalTime time) {
-
-        LocalTime stop = parseStringToLocalTime(dispositionDto.getStop());
-
-        return BigDecimal.valueOf(stop.until(time, ChronoUnit.MINUTES)).divide(BigDecimal.valueOf(60l));
-
+    public static BigDecimal calculateHourlySurplus(LocalTime startTime, LocalTime stopTime) {
+        return BigDecimal.valueOf(ChronoUnit.MINUTES.between(startTime, stopTime))
+                .divide(BigDecimal.valueOf(60L), RoundingMode.UNNECESSARY);
     }
 
 }

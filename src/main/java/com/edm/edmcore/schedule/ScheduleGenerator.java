@@ -31,13 +31,9 @@ public class ScheduleGenerator {
 
         for (SchedulePeriod period : scheduleRequest.getSchedulePeriods()) {
 
-
-
             Set<DispositionDto> dispositions = dispositionClient.getAllDispositionByOrganizationCode(scheduleRequest.getOrganizationCode(), scheduleRequest.getDate());
-            System.out.println(dispositions);
-            Schedule partialSchedule = scheduleUtil.generateSchedule(period, dispositions, scheduledDispositions);
 
-            System.out.println(partialSchedule.getDispositionDtos());
+            Schedule partialSchedule = scheduleUtil.generateSchedule(period, dispositions, scheduledDispositions);
 
             scheduledDispositions.addAll(partialSchedule.getDispositionDtos());
             errorMessage.append(partialSchedule.getErrorMessage());
@@ -52,8 +48,6 @@ public class ScheduleGenerator {
                 .build();
 
         scheduleRepository.save(schedule);
-
-        System.out.println(schedule);
 
         return schedule;
     }
